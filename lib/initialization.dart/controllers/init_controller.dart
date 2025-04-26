@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
+import 'package:personal_ai_assistant/controller/auth_controller.dart';
 import 'package:personal_ai_assistant/firebase_options.dart';
 
 enum InitialAppState { loading, initialized, error }
@@ -25,13 +26,10 @@ class InitializationController extends GetxController {
   Future<void> initializeApp() async {
     try {
       updateAppState(InitialAppState.loading);
-      
-      // Initialize Firebase
       await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform,
       );
-
-      // Simulate other initialization tasks
+      Get.lazyPut(() => AuthController());
       await Future.delayed(const Duration(seconds: 2));
 
       updateAppState(InitialAppState.initialized);

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:personal_ai_assistant/initialization.dart/views/global_error_screen.dart';
 import 'package:personal_ai_assistant/home_page.dart';
+import 'package:personal_ai_assistant/initialization.dart/views/global_error_screen.dart';
 import 'package:personal_ai_assistant/light_theme.dart';
+
+import 'views/login_screen.dart';
+import 'views/signup_screen.dart';
 
 class ReadyApp extends StatelessWidget {
   const ReadyApp({super.key});
@@ -10,9 +13,14 @@ class ReadyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      getPages: [
+       GetPage(name: '/login', page: () => LoginScreen()),
+      GetPage(name: '/signup', page: () => SignUpScreen()),
+      GetPage(name: '/home', page: () => HomePage()), 
+     ],
       theme: lightTheme,
       title: 'AI Assistant',
-      home: const HomePage(),
+      home:  LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
