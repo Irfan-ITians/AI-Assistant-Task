@@ -1,8 +1,8 @@
 import 'package:get/get.dart';
 import 'package:personal_ai_assistant/home_page.dart';
 import 'package:personal_ai_assistant/initialization.dart/views/splashScreen.dart';
-import 'package:personal_ai_assistant/views/login_screen.dart';
-import 'package:personal_ai_assistant/views/signup_screen.dart';
+import 'package:personal_ai_assistant/views/auth/login_screen.dart';
+import 'package:personal_ai_assistant/views/auth/signup_screen.dart';
 
 import 'app_bindings.dart';
 

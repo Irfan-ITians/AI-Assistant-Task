@@ -21,7 +21,9 @@ class AuthController extends GetxController {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
+      print('working before');
       Get.offAllNamed('/home'); 
+       print('working after');
     } on FirebaseAuthException catch (e) {
       Get.snackbar(
         'Login Failed',

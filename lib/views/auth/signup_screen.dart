@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controller/auth_controller.dart';
+import '../../controller/auth_controller.dart';
 
 class SignUpScreen extends StatelessWidget {
   final AuthController _authController = Get.find();

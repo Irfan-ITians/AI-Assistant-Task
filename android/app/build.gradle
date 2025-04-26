@@ -11,6 +11,7 @@ android {
     ndkVersion = "27.0.12077973"
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -28,7 +29,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        minSdkVersion 23 
+        minSdkVersion 23
+        multiDexEnabled true  // Add this if you have many dependencies
     }
 
     buildTypes {
@@ -38,6 +40,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+dependencies {
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // Add other dependencies here if needed
 }
 
 flutter {
