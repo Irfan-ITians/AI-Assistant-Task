@@ -19,7 +19,6 @@ class _TaskCreationPageState extends State<TaskCreationPage> {
  @override
 void initState() {
   super.initState();
-  // Now using the RxString directly
  ever(speechController.recognizedTextRx, (String? text) {
   if (text != null && text.isNotEmpty) {
     taskController.updateFromSpeech(text);

@@ -60,28 +60,4 @@ class Task extends HiveObject {
       location: location ?? this.location,
     );
   }
-
-  // Color get categoryColor {
-  //   switch (category) {
-  //     case 'Health': return Colors.red;
-  //     case 'Work': return Colors.blue;
-  //     case 'Academics': return Colors.purple;
-  //     case 'Social': return Colors.green;
-  //     case 'Personal': return Colors.orange;
-  //     case 'Finance': return Colors.teal;
-  //     case 'Fitness': return Colors.deepOrange;
-  //     default: return Colors.grey;
-  //   }
-  // }
-
-  // String get moodEmoji {
-  //   switch (category) {
-  //     case 'Social': return '😊';
-  //     case 'Health': return '😢';
-  //     case 'Personal': return '😠';
-  //     case 'Fitness': return '😴';
-  //     case 'Work': return '😫';
-  //     default: return '😐';
-  //   }
-  // }
 }

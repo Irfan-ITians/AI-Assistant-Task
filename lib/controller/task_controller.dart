@@ -1,11 +1,16 @@
 
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
 import '../models/task/task_model.dart';
+import '../services/ocr_service.dart';
 
 class TaskController extends GetxController {
   late Box<Task> taskBox;
@@ -16,8 +21,12 @@ class TaskController extends GetxController {
   var isInitialized = false.obs;
   var selectedDate = DateTime.now().obs;
 
+   final OcrService ocrService = Get.find();
+  final ImagePicker _picker = ImagePicker();
+
   TextEditingController taskInputController = TextEditingController();
   
+
     void updateFromSpeech(String text) {
     taskInputController.text = text;
   }
@@ -32,7 +41,70 @@ class TaskController extends GetxController {
     taskInputController.dispose();
     super.onClose();
   }
+ Future<void> addTaskFromCamera() async {
+    try {
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+        if (image != null) {
+          await _processImageToTask(File(image.path));
+        }
+      } else {
+        Get.snackbar('Permission Required', 'Camera access is needed to scan tasks');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to capture image: $e');
+    }
+  }
 
+  Future<void> addTaskFromGallery() async {
+    try {
+      final status = await Permission.photos.request();
+      if (!status.isGranted) {
+        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+        if (image != null) {
+          await _processImageToTask(File(image.path));
+        }
+      } else {
+        Get.snackbar('Permission Required', 'Gallery access is needed to select images');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Failed to select image: $e');
+    }
+  }
+
+  Future<void> _processImageToTask(File imageFile) async {
+    final extractedText = await ocrService.extractTextFromImage(imageFile);
+    if (extractedText != null && extractedText.isNotEmpty) {
+      // Show confirmation dialog
+      final confirmed = await Get.dialog<bool>(
+        AlertDialog(
+          title: const Text('Extracted Text'),
+          content: SingleChildScrollView(
+            child: Text(extractedText),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Get.back(result: false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Get.back(result: true),
+              child: const Text('Use This'),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        taskInputController.text = extractedText;
+        // Auto-submit if text is short enough
+        if (extractedText.length < 100) {
+          await addTaskFromInput(extractedText);
+        }
+      }
+    }
+  }
   Future<void> _initHive() async {
     if (!Hive.isBoxOpen('tasksBox')) {
       taskBox = await Hive.openBox<Task>('tasksBox');
@@ -42,11 +114,6 @@ class TaskController extends GetxController {
     await loadTasks();
     isInitialized.value = true;
   }
-
-
-
- 
- 
 
   Future<void> loadTasks() async {
     tasks.assignAll(taskBox.values.toList());

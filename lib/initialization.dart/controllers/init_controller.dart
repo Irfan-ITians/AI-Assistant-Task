@@ -9,6 +9,7 @@ import 'package:hive/hive.dart';
 
 import '../../controller/task_controller.dart';
 import '../../controller/theme_controller.dart';
+import '../../services/ocr_service.dart';
 
 enum InitialAppState { loading, initialized, error }
 
@@ -36,24 +37,17 @@ class InitializationController extends GetxController {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       Get.lazyPut(() => AuthController());
-       Get.put(ThemeController());
+      Get.put(ThemeController());
       await Hive.initFlutter();
-
-  //await Hive.deleteBoxFromDisk('tasksBox'); // <<< ADD THIS TO CLEAN OLD BOX!!
-
-  if (!Hive.isAdapterRegistered(0)) {
-    Hive.registerAdapter(TaskAdapter());
-  }
-
-  await Hive.openBox<Task>('tasksBox');
-
-  Get.lazyPut(() => TaskController(), fenix: true);
- 
+      if (!Hive.isAdapterRegistered(0)) {
+        Hive.registerAdapter(TaskAdapter());
+      }
+       await Hive.openBox<Task>('tasksBox');
+      Get.lazyPut(() => TaskController(), fenix: true);
+        Get.lazyPut(() => OcrService(), fenix: true);
       updateAppState(InitialAppState.initialized);
     } catch (e, s) {
       log("Initialization Error", error: e, stackTrace: s);
       updateAppState(InitialAppState.error, e, s);
-    rethrow;
     }
-  }
-}
+  }}

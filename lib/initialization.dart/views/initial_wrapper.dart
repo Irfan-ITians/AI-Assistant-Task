@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:personal_ai_assistant/initialization.dart/controllers/init_controller.dart';
 import 'package:personal_ai_assistant/app.dart';
-
 import 'splashScreen.dart';
 
 class InitialWrapper extends StatelessWidget {

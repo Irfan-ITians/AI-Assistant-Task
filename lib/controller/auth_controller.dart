@@ -1,14 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:get/get.dart';
+import 'package:flutter/material.dart';
+import '../services/auth_storage_service.dart'; 
 
 class AuthController extends GetxController {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
-  
+
   final RxBool obscureText = true.obs;
   final RxBool isLoading = false.obs;
 
@@ -21,9 +23,10 @@ class AuthController extends GetxController {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-      print('working before');
-      Get.offAllNamed('/home'); 
-       print('working after');
+      await AuthStorageService.saveLoginSession(emailController.text.trim());
+
+      Get.offAllNamed('/home');
+      print('working after');
     } on FirebaseAuthException catch (e) {
       Get.snackbar(
         'Login Failed',
@@ -43,8 +46,9 @@ class AuthController extends GetxController {
         email: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
-      
-      Get.offAllNamed('/home'); 
+      await AuthStorageService.saveLoginSession(emailController.text.trim());
+
+      Get.offAllNamed('/home');
     } on FirebaseAuthException catch (e) {
       Get.snackbar(
         'Sign Up Failed',
@@ -55,6 +59,12 @@ class AuthController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> logout() async {
+    await _auth.signOut();
+    await AuthStorageService.clearSession();
+    Get.offAllNamed('/login');
   }
 
   @override
