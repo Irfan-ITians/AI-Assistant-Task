@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:personal_ai_assistant/initialization.dart/views/global_error_screen.dart';
-import 'package:personal_ai_assistant/light_theme.dart';
+import 'package:personal_ai_assistant/utilities/theme.dart';
+import 'package:personal_ai_assistant/views/home/speech_to_text_page.dart';
 
+import 'controller/theme_controller.dart';
 import 'views/auth/login_screen.dart';
 import 'views/auth/signup_screen.dart';
 import 'views/home/daily_planner.dart';
@@ -16,20 +18,21 @@ class ReadyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       getPages: [
-       GetPage(name: '/login', page: () => LoginScreen()),
-      GetPage(name: '/signup', page: () => SignUpScreen()),
-      GetPage(name: '/home', page: () => DashboardView()), 
-      GetPage(name: '/taskView', page: () => TaskCreationPage()), 
-      GetPage(name: '/dailyplanner', page: () => DailyPlannerScreen()), 
-     ],
+        GetPage(name: '/login', page: () => LoginScreen()),
+        GetPage(name: '/signup', page: () => SignUpScreen()),
+        GetPage(name: '/home', page: () => DashboardView()), 
+        GetPage(name: '/taskView', page: () => TaskCreationPage()), 
+        GetPage(name: '/dailyplanner', page: () => DailyPlannerScreen()),
+      ],
       theme: lightTheme,
+      darkTheme: darkTheme, // Add dark theme
+      themeMode: ThemeMode.system, // This makes the app follow system theme
       title: 'AI Assistant',
-      home:  DashboardView(),
+      home: DashboardView(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
-
 class ErrorApp extends StatelessWidget {
   const ErrorApp({
     super.key,
@@ -44,15 +47,20 @@ class ErrorApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      theme: lightTheme,
-      title: 'AI Assistant',
-      home: ErrorPage(
-        error: error,
-        stackTrace: stackTrace,
-        onRefresh: onRefresh,
-      ),
-      debugShowCheckedModeBanner: false,
-    );
+    return Obx((){
+      final themeController = Get.find<ThemeController>();
+     return GetMaterialApp(
+        theme: lightTheme,
+        darkTheme: darkTheme,
+        themeMode: themeController.themeMode.value,
+        title: 'AI Assistant',
+        home: ErrorPage(
+          error: error,
+          stackTrace: stackTrace,
+          onRefresh: onRefresh,
+        ),
+        debugShowCheckedModeBanner: false,
+      );
+  });
   }
 }

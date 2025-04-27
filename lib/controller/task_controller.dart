@@ -4,28 +4,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 import 'package:uuid/uuid.dart';
 import '../models/task/task_model.dart';
 
 class TaskController extends GetxController {
   late Box<Task> taskBox;
-  final SpeechToText speechRecognizer = SpeechToText();
   final Uuid uuid = const Uuid();
 
   var tasks = <Task>[].obs;
   var filteredTasks = <Task>[].obs;
   var isInitialized = false.obs;
   var selectedDate = DateTime.now().obs;
-  var isListening = false.obs;
 
   TextEditingController taskInputController = TextEditingController();
+  
+    void updateFromSpeech(String text) {
+    taskInputController.text = text;
+  }
 
   @override
   void onInit() {
     super.onInit();
     _initHive();
-    _initSpeech();
+  }
+    @override
+  void onClose() {
+    taskInputController.dispose();
+    super.onClose();
   }
 
   Future<void> _initHive() async {
@@ -38,9 +43,10 @@ class TaskController extends GetxController {
     isInitialized.value = true;
   }
 
-  Future<void> _initSpeech() async {
-    await speechRecognizer.initialize();
-  }
+
+
+ 
+ 
 
   Future<void> loadTasks() async {
     tasks.assignAll(taskBox.values.toList());
@@ -260,19 +266,6 @@ Future<void> editTask(String id, Task updatedTask) async {
     return 3;
   }
 
-  Future<void> startListening() async {
-    if (await speechRecognizer.initialize()) {
-      isListening.value = true;
-      speechRecognizer.listen(
-        onResult: (result) {
-          taskInputController.text = result.recognizedWords;
-          if (result.finalResult) {
-            addTaskFromInput(result.recognizedWords);
-          }
-        },
-      );
-    }
-  }
    final FlutterLocalNotificationsPlugin notificationsPlugin = 
       FlutterLocalNotificationsPlugin();
 
@@ -303,10 +296,7 @@ Future<void> editTask(String id, Task updatedTask) async {
     }
   }
 
-  void stopListening() {
-    speechRecognizer.stop();
-    isListening.value = false;
-  }
+ 
 
   bool isSameDay(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;

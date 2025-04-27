@@ -8,16 +8,39 @@ import 'package:personal_ai_assistant/controller/task_controller.dart';
 import 'package:personal_ai_assistant/views/home/daily_planner.dart';
 import 'package:personal_ai_assistant/views/home/remainder.dart';
 import 'package:personal_ai_assistant/widgets/dashboard_tile.dart';
+import 'package:personal_ai_assistant/widgets/dialogs/task_details_dialog.dart';
 import 'package:personal_ai_assistant/widgets/remainder_card.dart';
 
+import '../../controller/theme_controller.dart';
+import '../../utilities/contants.dart';
+import '../../widgets/app_drawer.dart';
 import 'task_view.dart';
 
 class DashboardView extends StatelessWidget {
   final DashboardController dashboardController = Get.put(DashboardController());
   final TaskController taskController = Get.find();
-
+    final themeController = Get.find<ThemeController>();
   DashboardView({super.key});
-
+DropdownMenuItem<ThemeMode> _buildThemeDropdownItem(
+    ThemeMode mode, IconData icon, String text) {
+  return DropdownMenuItem(
+    value: mode,
+    child: Row(
+      children: [
+        Icon(icon, size: 22, color: Colors.deepPurple),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+        if (themeController.themeMode.value == mode)
+          Icon(Icons.check, size: 18, color: Colors.green),
+      ],
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +53,7 @@ class DashboardView extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+     drawer: AppDrawer(themeController: themeController),  body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,35 +132,40 @@ class DashboardView extends StatelessWidget {
                   ],
                 )),
 
-            const SizedBox(height: 20),
+            // Replace the Recent Tasks section with this:
 
-            const Text('Recent Tasks',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+const SizedBox(height: 20),
 
-            const SizedBox(height: 8),
+const Text('Recent Tasks',
+    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
 
-            // Recent Tasks
-            Obx(() => ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: taskController.tasks.take(3).length,
-                  itemBuilder: (context, index) {
-                    final task = taskController.tasks[index];
-                    return ListTile(
-                      leading: Checkbox(
-                        value: task.isCompleted,
-                        onChanged: (_) => taskController.toggleTaskCompletion(task.id),
-                      ),
-                      title: Text(task.title),
-                      subtitle:
-                          Text("Due: ${DateFormat.MMMd().format(task.dueDate)}"),
-                      trailing: Chip(
-                        label: Text(task.category),
-                        backgroundColor: _getCategoryColor(task.category),
-                      ),
-                    );
-                  },
-                )),
+const SizedBox(height: 8),
+Obx(() {
+  final recentTasks = taskController.tasks.length <= 3 
+      ? taskController.tasks.toList()
+      : taskController.tasks.sublist(taskController.tasks.length - 3);
+  
+  return ListView.builder(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    itemCount: recentTasks.length,
+    itemBuilder: (context, index) {
+      final task = recentTasks[index];
+      return ListTile(
+        leading: Checkbox(
+          value: task.isCompleted,
+          onChanged: (_) => taskController.toggleTaskCompletion(task.id),
+        ),
+        title: Text(task.title),
+        subtitle: Text("Due: ${DateFormat.MMMd().format(task.dueDate)}"),
+        trailing: Chip(
+          label: Text(task.category),
+          backgroundColor: getCategoryColor(task.category),
+        ),
+      );
+    },
+  );
+}),
           ],
         ),
       ),
@@ -148,24 +176,5 @@ class DashboardView extends StatelessWidget {
     );
   }
 
-  Color _getCategoryColor(String category) {
-    switch (category) {
-      case 'Health':
-        return Colors.red[100]!;
-      case 'Work':
-        return Colors.blue[100]!;
-      case 'Academics':
-        return Colors.purple[100]!;
-      case 'Social':
-        return Colors.green[100]!;
-      case 'Personal':
-        return Colors.orange[100]!;
-      case 'Finance':
-        return Colors.teal[100]!;
-      case 'Fitness':
-        return Colors.deepOrange[100]!;
-      default:
-        return Colors.grey[100]!;
-    }
-  }
+  
 }

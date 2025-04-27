@@ -2,10 +2,30 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:personal_ai_assistant/controller/task_controller.dart';
+import 'package:personal_ai_assistant/controller/speech_controller.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class TaskCreationPage extends StatelessWidget {
+class TaskCreationPage extends StatefulWidget {
+  const TaskCreationPage({Key? key}) : super(key: key);
+
+  @override
+  State<TaskCreationPage> createState() => _TaskCreationPageState();
+}
+
+class _TaskCreationPageState extends State<TaskCreationPage> {
   final TaskController taskController = Get.find();
+  final SpeechController speechController = Get.put(SpeechController());
+
+ @override
+void initState() {
+  super.initState();
+  // Now using the RxString directly
+ ever(speechController.recognizedTextRx, (String? text) {
+  if (text != null && text.isNotEmpty) {
+    taskController.updateFromSpeech(text);
+  }
+});
+}
 
   @override
   Widget build(BuildContext context) {
@@ -13,18 +33,16 @@ class TaskCreationPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Create New Task'),
         actions: [
-          IconButton(
-            icon: Obx(() => Icon(
-              taskController.isListening.value ? Icons.mic_off : Icons.mic,
-            )),
+          Obx(() => IconButton(
+            icon: Icon(speechController.isListening ? Icons.mic_off : Icons.mic),
             onPressed: () {
-              if (taskController.isListening.value) {
-                taskController.stopListening();
+              if (speechController.isListening) {
+                speechController.stopListening();
               } else {
-                taskController.startListening();
+                speechController.startListening();
               }
             },
-          ),
+          )),
         ],
       ),
       body: SingleChildScrollView(
@@ -33,13 +51,36 @@ class TaskCreationPage extends StatelessWidget {
           children: [
             TextField(
               controller: taskController.taskInputController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Task Description',
                 hintText: 'e.g., "Submit project by tomorrow at 3pm"',
-                border: OutlineInputBorder(),
+                border: const OutlineInputBorder(),
+                suffixIcon: Obx(() => speechController.isListening
+                    ? const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                        ),
+                      )
+                    : const SizedBox.shrink()),
               ),
               maxLines: 3,
             ),
+            
+            Obx(() => speechController.isListening
+                ? Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      'Listening...',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink()),
+
             const SizedBox(height: 20),
             const Text('Or select due date manually:', style: TextStyle(fontSize: 16)),
             Obx(() => TableCalendar(
@@ -50,28 +91,36 @@ class TaskCreationPage extends StatelessWidget {
                 taskController.isSameDay(day, taskController.selectedDate.value),
               onDaySelected: (selectedDay, _) => 
                 taskController.updateSelectedDate(selectedDay),
-              calendarStyle: const CalendarStyle(
+              calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Theme.of(context).colorScheme.primary,
                   shape: BoxShape.circle,
                 ),
                 selectedDecoration: BoxDecoration(
-                  color: Colors.green,
+                  color: Theme.of(context).colorScheme.secondary,
                   shape: BoxShape.circle,
                 ),
               ),
+              headerStyle: HeaderStyle(
+                formatButtonVisible: false,
+                titleCentered: true,
+              ),
             )),
-            // const Spacer(),
+
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   if (taskController.taskInputController.text.trim().isNotEmpty) {
-                    taskController.addTaskFromInput(
+                    final success = await taskController.addTaskFromInput(
                       taskController.taskInputController.text.trim(),
                     );
-                    taskController.taskInputController.clear();
-                    Get.back();
+                    if (success) {
+                      taskController.taskInputController.clear();
+                      speechController.clearRecognizedText();
+                      Get.back();
+                    }
                   } else {
                     Get.snackbar(
                       'Error',

@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'task_controller.dart';
@@ -29,4 +28,9 @@ class DashboardController extends GetxController {
   String formattedDate() {
     return DateFormat('EEEE, MMMM d').format(DateTime.now());
   }
+
+  
 }
+
+
+

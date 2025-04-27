@@ -8,6 +8,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:hive/hive.dart';
 
 import '../../controller/task_controller.dart';
+import '../../controller/theme_controller.dart';
 
 enum InitialAppState { loading, initialized, error }
 
@@ -35,6 +36,7 @@ class InitializationController extends GetxController {
         options: DefaultFirebaseOptions.currentPlatform,
       );
       Get.lazyPut(() => AuthController());
+       Get.put(ThemeController());
       await Hive.initFlutter();
 
   //await Hive.deleteBoxFromDisk('tasksBox'); // <<< ADD THIS TO CLEAN OLD BOX!!

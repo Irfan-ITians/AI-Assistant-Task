@@ -9,7 +9,6 @@ class RemindersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final taskController = Get.find<TaskController>();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Reminders'),
